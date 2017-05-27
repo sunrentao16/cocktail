@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup as BS
 import urllib.request  as urllib2 
 import re # regular expression
 
-# website = 'http://www.drinksmixer.com/'
+
 
 #-------------------------------------------
 # get all recipes links on one pages
@@ -20,7 +20,7 @@ def get_links(url, key_words):
 			ret[index] = link.get('href')
 	
 	ret = list(set(ret)) # unique
-	ret = [x for x in ret if x is not None]
+	ret = [x for x in ret if x is not None] # delete None
 	for l in ret:
 		print(l)
 	return ret
@@ -28,6 +28,8 @@ def get_links(url, key_words):
 #
 #url = 'https://www.bigoven.com/recipes/cocktail/best'
 #key_words = 'www.bigoven.com/recipe/'
+
+#url = 'http://www.drinksmixer.com/'
 #get_links(url, key_words)
 
 #-----------------------------------------------
@@ -39,29 +41,43 @@ def get_recipe(url):
 	
 	# initialize the recipe dict
 	recipe = dict(
-	# name
-	name = soup.findAll(class_ = 'fn')[0].text, 
-	# review number
-	review_count = soup.findAll(class_ = 'count')[0].text, 
-	# rating
-	rating = soup.findAll(class_ = 'recipe-detail-star-rating')[0].text, 
-	# duration
-	duration = soup.findAll(class_ = 'duration')[0].text 
+	name = soup.findAll(class_ = 'recipe_title')[0].text, 
+	instruction = soup.findAll(class_ = 'instructions')[0].text
 	)
 	
 	# ingredient	
 	ingredient = soup.findAll(class_ = 'name')
 	# amount
 	amount = soup.findAll(class_ = 'amount')
-	
-	
 	for index, ing in enumerate(ingredient):
 		recipe[ing.text] = amount[index].text
+	
+	# slice rating text to rating & vote count
+	rating_vote = soup.findAll(class_ = 'rating')[0].text.split()[0] 
+	recipe['rating'] = rating_vote[6:9]
+	recipe['vote_count'] = rating_vote.split('.')[-1][1:]
+	#print(rating_vote, '\n')
+	
+	# nutrition
+	nutrition = soup.findAll(class_ = 'l1a')[2:]
+	print(len(nutrition))
+	print(nutrition,'\n')
 	#print(name)
 	for key, v in recipe.items():
 		print(key, ':', v)
-		
 
-url = 'https://www.bigoven.com/recipe/pomegranate-key-lime-vodka-cocktails/641724'
-url = 'https://www.bigoven.com/recipe/the-old-fashioned-cocktail/124600'
+#url = 'https://www.bigoven.com/recipe/pomegranate-key-lime-vodka-cocktails/641724'
+#url = 'https://www.bigoven.com/recipe/the-old-fashioned-cocktail/124600'
+
+url = 'http://www.drinksmixer.com/'
+url = 'http://www.drinksmixer.com/drink5056.html'
+url = 'http://www.drinksmixer.com/drink2961.html'
+url = 'http://www.drinksmixer.com/drink3954.html'
 get_recipe(url)
+
+
+
+
+
+
+

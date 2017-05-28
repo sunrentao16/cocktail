@@ -12,22 +12,25 @@ def get_links(url, key_words = None):
 	
 	html = urllib2.urlopen(url)
 	soup = BS(html, "html5lib")
-	tags_a = soup.findAll('a')
-	ret = [None]*len(tags_a)
+	tags_a = soup.findAll(class_ = 'l1a')
 	
-	if key_words == None:
-		key_words = '/drink'
-	
-	for index, link in enumerate(tags_a):
+	tags_1 = tags_a[1].findAll('a')	
+	ret_1 = [None]*len(tags_1)
+	for index, link in enumerate(tags_1):
 		if re.search(key_words,link.get('href')):
-			ret[index] = 'http://www.drinksmixer.com' + link.get('href')
-	
-	ret = list(set(ret)) # unique
-	ret = [x for x in ret if x is not None] # delete None
-	for l in ret:
-		print(l)
-	return ret
+			ret_1[index] = 'http://www.drinksmixer.com' + link.get('href')
 
+	tags_2 = tags_a[2].findAll('a')	
+	ret_2 = [None]*len(tags_2)
+	for index, link in enumerate(tags_2):
+		if re.search(key_words,link.get('href')):
+			ret_2[index] = 'http://www.drinksmixer.com' + link.get('href')
+	
+	ret = ret_1 + ret_2
+#	print(len(ret))
+#	for l in ret:
+#		print(l)
+	return ret
 
 #url = 'http://www.drinksmixer.com/cat/1/'
 #key_words = '/drink'
@@ -67,7 +70,7 @@ def get_recipe(url):
 	
 		## column 1
 		cl1 = [x for x in nutrition[0].text.split() if '(' not in x]
-		print(cl1)
+		#print(cl1)
 	
 		## column 2
 		cl2_raw =  [None]*4# 2nd row is missing
@@ -80,7 +83,7 @@ def get_recipe(url):
 	
 		## column 3
 		cl3 = nutrition[2].text.split()
-		print(cl3)
+		#print(cl3)
 	
 		## column 4
 		cl4_raw =  [None]*4# 5nd row is missing
@@ -96,38 +99,48 @@ def get_recipe(url):
 		for index, x in enumerate(cl3):
 			nutri_dict[x] = cl4_raw[index]
 	
-#		for key, v in nutri_dict.items():
-#			print(key, ':', v)
-
-#	
-#	for k, v in basic.items():
-#		print(k, ':', v)
-#	
-#	for key, v in recipe.items():
-#		print(key, ':', v)
 	
-	print([basic, recipe, nutri_dict])
+	#print([basic, recipe, nutri_dict])
 	return([basic, recipe, nutri_dict])
 	
-#	
-#url = 'http://www.drinksmixer.com/'
-#url = 'http://www.drinksmixer.com/drink5056.html'
-#url = 'http://www.drinksmixer.com/drink2961.html'
+
 #url = 'http://www.drinksmixer.com/drink3954.html'
 #url = 'http://www.drinksmixer.com/drink10001.html'
 #get_recipe(url)
 
+#-------------------------------------------------
+# save data
 def save_data(url):
-	
-	urls = get_links(url)
-	data = [None] * len(urls)
-	for i, u in enumerate(urls):
-		data[i] = get_recipe(u)
+	data_all = []
+	for i in range(1,124):
+		url_tmp = url + str(i) + '/' # create new url
+		urls = get_links(url_tmp)
+		data = [None] * len(urls)
+		if len(urls) > 0:
+			for j, u in enumerate(urls):
+				data[j] = get_recipe(u)
+				print(j)
+			# add data to data_all
+			data_all = data_all + data
+			print('____', i)
+		else:
+			print('empty :', i)
+		
 	# write data by pickle
 	with open('./data/cocktail_data', 'wb') as fp:
-		pickle.dump(data, fp)
+		pickle.dump(data_all, fp)
 
+#-----------------------------------------------		
+def test():
+	url = 'http://www.drinksmixer.com/cat/1/32/'
+	urls = get_links(url)
+	data = [None] * len(urls)
+	for j, u in enumerate(urls):
+		data[j] = get_recipe(u)
+	print(len(data))
+	
+#---------------------------------------------
 url = 'http://www.drinksmixer.com/cat/1/'
 save_data(url)
-
+#test()
 

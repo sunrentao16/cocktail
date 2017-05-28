@@ -3,18 +3,21 @@
 from bs4 import BeautifulSoup as BS
 import urllib.request  as urllib2 
 import re # regular expression
-
+import pickle # write & read data
 
 
 #-------------------------------------------
 # get all recipes links on one pages
 def get_links(url, key_words = None):
-
+	
 	html = urllib2.urlopen(url)
 	soup = BS(html, "html5lib")
 	tags_a = soup.findAll('a')
 	ret = [None]*len(tags_a)
-
+	
+	if key_words == None:
+		key_words = '/drink'
+	
 	for index, link in enumerate(tags_a):
 		if re.search(key_words,link.get('href')):
 			ret[index] = 'http://www.drinksmixer.com' + link.get('href')
@@ -26,9 +29,9 @@ def get_links(url, key_words = None):
 	return ret
 
 
-url = 'http://www.drinksmixer.com/cat/1/'
-key_words = '/drink'
-get_links(url, key_words)
+#url = 'http://www.drinksmixer.com/cat/1/'
+#key_words = '/drink'
+#get_links(url, key_words)
 
 #-----------------------------------------------
 # get recipe given a url
@@ -38,23 +41,24 @@ def get_recipe(url):
 	soup = BS(html, "html5lib")
 	
 	# initialize the recipe dict
-	recipe = dict(
+	basic = dict(
 	name = soup.findAll(class_ = 'recipe_title')[0].text, 
 	instruction = soup.findAll(class_ = 'instructions')[0].text
 	)
 	
+	# slice rating text to rating & vote count
+	rating_vote = soup.findAll(class_ = 'rating')[0].text.split()[0] 
+	basic['rating'] = rating_vote[6:9]
+	basic['vote_count'] = rating_vote.split('.')[-1][1:]
+	#print(rating_vote, '\n')	
+	
+	recipe = dict()
 	# ingredient	
 	ingredient = soup.findAll(class_ = 'name')
 	# amount
 	amount = soup.findAll(class_ = 'amount')
 	for index, ing in enumerate(ingredient):
 		recipe[ing.text] = amount[index].text
-	
-	# slice rating text to rating & vote count
-	rating_vote = soup.findAll(class_ = 'rating')[0].text.split()[0] 
-	recipe['rating'] = rating_vote[6:9]
-	recipe['vote_count'] = rating_vote.split('.')[-1][1:]
-	#print(rating_vote, '\n')
 	
 	# nutrition
 	nutrition = soup.findAll(class_ = 'l1a')[2:] # get table
@@ -92,14 +96,18 @@ def get_recipe(url):
 		for index, x in enumerate(cl3):
 			nutri_dict[x] = cl4_raw[index]
 	
-		for key, v in nutri_dict.items():
-			print(key, ':', v)
+#		for key, v in nutri_dict.items():
+#			print(key, ':', v)
 
-
-	for key, v in recipe.items():
-		print(key, ':', v)
-		
-	return(recipe, nutri_dict)
+#	
+#	for k, v in basic.items():
+#		print(k, ':', v)
+#	
+#	for key, v in recipe.items():
+#		print(key, ':', v)
+	
+	print([basic, recipe, nutri_dict])
+	return([basic, recipe, nutri_dict])
 	
 #	
 #url = 'http://www.drinksmixer.com/'
@@ -109,9 +117,17 @@ def get_recipe(url):
 #url = 'http://www.drinksmixer.com/drink10001.html'
 #get_recipe(url)
 
+def save_data(url):
+	
+	urls = get_links(url)
+	data = [None] * len(urls)
+	for i, u in enumerate(urls):
+		data[i] = get_recipe(u)
+	# write data by pickle
+	with open('./data/cocktail_data', 'wb') as fp:
+		pickle.dump(data, fp)
 
-
-
-
+url = 'http://www.drinksmixer.com/cat/1/'
+save_data(url)
 
 

@@ -8,25 +8,27 @@ import pickle # write & read data
 
 #-------------------------------------------
 # get all recipes links on one pages
-def get_links(url, key_words = None):
+def get_links(url, key_words = '/drink'):
 	
 	html = urllib2.urlopen(url)
 	soup = BS(html, "html5lib")
 	tags_a = soup.findAll(class_ = 'l1a')
+	ret = []
 	
-	tags_1 = tags_a[1].findAll('a')	
-	ret_1 = [None]*len(tags_1)
-	for index, link in enumerate(tags_1):
-		if re.search(key_words,link.get('href')):
-			ret_1[index] = 'http://www.drinksmixer.com' + link.get('href')
+	if len(tags_a) > 0:
+		tags_1 = tags_a[1].findAll('a')	
+		ret_1 = [None]*len(tags_1)
+		for index, link in enumerate(tags_1):
+			if re.search(key_words,link.get('href')):
+				ret_1[index] = 'http://www.drinksmixer.com' + link.get('href')
 
-	tags_2 = tags_a[2].findAll('a')	
-	ret_2 = [None]*len(tags_2)
-	for index, link in enumerate(tags_2):
-		if re.search(key_words,link.get('href')):
-			ret_2[index] = 'http://www.drinksmixer.com' + link.get('href')
+		tags_2 = tags_a[2].findAll('a')	
+		ret_2 = [None]*len(tags_2)
+		for index, link in enumerate(tags_2):
+			if re.search(key_words,link.get('href')):
+				ret_2[index] = 'http://www.drinksmixer.com' + link.get('href')
 	
-	ret = ret_1 + ret_2
+		ret = ret_1 + ret_2
 #	print(len(ret))
 #	for l in ret:
 #		print(l)
@@ -112,19 +114,22 @@ def get_recipe(url):
 # save data
 def save_data(url):
 	data_all = []
-	for i in range(1,124):
-		url_tmp = url + str(i) + '/' # create new url
-		urls = get_links(url_tmp)
-		data = [None] * len(urls)
-		if len(urls) > 0:
-			for j, u in enumerate(urls):
-				data[j] = get_recipe(u)
-				print(j)
-			# add data to data_all
-			data_all = data_all + data
-			print('____', i)
-		else:
-			print('empty :', i)
+	try:
+		for i in range(1,125):
+			url_tmp = url + str(i) + '/' # create new url
+			urls = get_links(url_tmp)
+			data = [None] * len(urls)
+			if len(urls) > 0:
+				for j, u in enumerate(urls):
+					data[j] = get_recipe(u)
+					print(j)
+				# add data to data_all
+				data_all = data_all + data
+				print('____', i)
+			else:
+				print('empty :', i)
+	except:
+		print("error! stop at %d page" % i)
 		
 	# write data by pickle
 	with open('./data/cocktail_data', 'wb') as fp:

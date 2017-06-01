@@ -13,4 +13,5 @@ def clean_data():
 	
 	print(len(data))
 	print(len(data_2))
+	
 clean_data()

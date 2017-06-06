@@ -122,7 +122,7 @@ def save_data(url):
 			if len(urls) > 0:
 				for j, u in enumerate(urls):
 					data[j] = get_recipe(u)
-					print(j)
+					#print(j)
 				# add data to data_all
 				data_all = data_all + data
 				print('____', i)
@@ -133,11 +133,11 @@ def save_data(url):
 		
 	# write data by pickle
 	with open('./data/cocktail_data', 'wb') as fp:
-		pickle.dump(data_all, fp)
+		pickle.dump(data_all, fp, protocol=2)
 
 #-----------------------------------------------		
 def test():
-	url = 'http://www.drinksmixer.com/cat/1/32/'
+	url = 'http://www.drinksmixer.com/cat/1/3/'
 	urls = get_links(url)
 	data = [None] * len(urls)
 	for j, u in enumerate(urls):
@@ -146,6 +146,6 @@ def test():
 	
 #---------------------------------------------
 url = 'http://www.drinksmixer.com/cat/1/'
-save_data(url)
-#test()
+#save_data(url)
+test()
 

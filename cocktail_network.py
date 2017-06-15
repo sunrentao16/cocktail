@@ -42,7 +42,16 @@ for r in range(df_ing.shape[0]):
         else:
             G.add_edge(ing_names[c[0]], ing_names[c[1]],{'weight':1})
             
-            
+# modify network--------------------------------#
+### remove edges with small weight
+rm_e = list() # edges to be removed
+for e in G.edges_iter():
+	if G[e[0]][e[1]]['weight'] <= 5:
+		rm_e.append(e)
+G.remove_edges_from(rm_e) # delete edges
+### remove isolate nodes
+G.remove_nodes_from(nx.isolates(G))
+     
 #----------------------------------------------#
 
 # write json formatted data
@@ -57,4 +66,4 @@ app = flask.Flask(__name__, static_folder="force")
 def static_proxy(path):
   return app.send_static_file(path)
 print('\nGo to http://localhost:8000/force.html to see the example\n')
-app.run(port=8125)
+app.run(port=8130)
